@@ -1,8 +1,8 @@
 import * as path from "node:path";
 import { Biome, Distribution } from "@biomejs/js-api";
-import * as nanoid from "nanoid";
 import * as typescript from "typescript";
 import type { CodeGenConfig } from "./configuration.js";
+import { nanoid } from "./util/id.js";
 
 export class CodeFormatter {
   config: CodeGenConfig;
@@ -20,16 +20,16 @@ export class CodeFormatter {
     const fileTextChanges = languageService.organizeImports(
       { type: "file", fileName: tempFileName },
       { newLineCharacter: typescript.sys.newLine },
-      undefined,
+      undefined
     )[0];
 
     if (fileTextChanges?.textChanges.length) {
       return fileTextChanges.textChanges.reduceRight(
         (content, { span, newText }) =>
           `${content.slice(0, span.start)}${newText}${content.slice(
-            span.start + span.length,
+            span.start + span.length
           )}`,
-        content,
+        content
       );
     }
 
@@ -44,14 +44,14 @@ export class CodeFormatter {
       formatter: { indentStyle: "space" },
     });
     const formatted = biome.formatContent(biomeProject.projectKey, content, {
-      filePath: path.format({ name: nanoid.nanoid(), ext: "ts" }),
+      filePath: path.format({ name: nanoid(), ext: "ts" }),
     });
     return formatted.content;
   };
 
   formatCode = async (
     code: string,
-    { removeUnusedImports = true, format = true } = {},
+    { removeUnusedImports = true, format = true } = {}
   ) => {
     if (removeUnusedImports) {
       code = this.removeUnusedImports(code);
@@ -73,13 +73,13 @@ class TsLanguageServiceHost {
     this.content = content;
     const tsconfig = typescript.findConfigFile(
       fileName,
-      typescript.sys.fileExists,
+      typescript.sys.fileExists
     );
     this.compilerOptions = tsconfig
       ? typescript.convertCompilerOptionsFromJson(
           typescript.readConfigFile(tsconfig, typescript.sys.readFile).config
             .compilerOptions,
-          "",
+          ""
         ).options
       : typescript.getDefaultCompilerOptions();
   }
