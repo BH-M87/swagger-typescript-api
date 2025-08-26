@@ -1,5 +1,5 @@
 import { consola } from "consola";
-import lodash from "lodash";
+import * as lodash from "lodash";
 import type { CodeGenConfig } from "./configuration.js";
 
 type FormattingSchemaType = "enum-key" | "type-name";
@@ -46,7 +46,7 @@ export class TypeNameFormatter {
       .startCase(`${typePrefix}_${fixedModelName}_${typeSuffix}`)
       .replace(/\s/g, "");
     const formattedResultName =
-      this.config.hooks.onFormatTypeName(formattedName, name, schemaType) ||
+      this.config.hooks.onFormatTypeName?.(formattedName, name, schemaType) ||
       formattedName;
 
     this.formattedModelNamesMap.set(hashKey, formattedResultName);
@@ -58,7 +58,7 @@ export class TypeNameFormatter {
 
   fixModelName = (
     name: string,
-    options: { type?: FormattingSchemaType },
+    options: { type?: FormattingSchemaType }
   ): string => {
     if (!this.isValidName(name)) {
       if (!/^[a-zA-Z_$]/g.test(name)) {

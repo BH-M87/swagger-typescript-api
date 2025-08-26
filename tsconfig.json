@@ -9,7 +9,11 @@
     "moduleResolution": "NodeNext",
     "noEmit": true,
     "noPropertyAccessFromIndexSignature": false,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2022",
+    "lib": ["ES2022"]
   },
   "exclude": ["dist"]
 }

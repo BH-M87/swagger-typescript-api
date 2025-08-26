@@ -1,4 +1,4 @@
-import lodash from "lodash";
+import * as lodash from "lodash";
 import type { OpenAPI } from "openapi-types";
 import type { CodeGenConfig } from "./configuration.js";
 import type { SwaggerSchemaResolver } from "./swagger-schema-resolver.js";

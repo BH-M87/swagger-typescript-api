@@ -28,7 +28,7 @@ export class SchemaParserFabric {
     templatesWorker: TemplatesWorker,
     schemaComponentsMap: SchemaComponentsMap,
     typeNameFormatter: TypeNameFormatter,
-    schemaWalker: SchemaWalker,
+    schemaWalker: SchemaWalker
   ) {
     this.config = config;
     this.schemaComponentsMap = schemaComponentsMap;
@@ -39,7 +39,15 @@ export class SchemaParserFabric {
     this.schemaFormatters = new SchemaFormatters(this);
   }
 
-  createSchemaParser = ({ schema, typeName, schemaPath }) => {
+  createSchemaParser = ({
+    schema,
+    typeName,
+    schemaPath,
+  }: {
+    schema: any;
+    typeName: any;
+    schemaPath: any;
+  }) => {
     return new SchemaParser(this, { schema, typeName, schemaPath });
   };
 
@@ -49,6 +57,11 @@ export class SchemaParserFabric {
     linkedComponent,
     schemaPath,
     ...otherSchemaProps
+  }: {
+    content: any;
+    linkedSchema?: any;
+    linkedComponent: any;
+    schemaPath: any;
   }) => {
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ schema: any; schemaPath: any; ... Remove this comment to see the full error message
     const parser = this.createSchemaParser({
@@ -68,11 +81,15 @@ export class SchemaParserFabric {
     typeName,
     schema,
     schemaPath,
+  }: {
+    typeName: any;
+    schema: any;
+    schemaPath: any;
   }): SchemaComponent => {
     const schemaCopy = structuredClone(schema);
     const customComponent = this.schemaComponentsMap.createComponent(
       this.schemaComponentsMap.createRef(["components", "schemas", typeName]),
-      schemaCopy,
+      schemaCopy
     );
     const parsed = this.parseSchema(schemaCopy, null, schemaPath);
 
@@ -85,7 +102,7 @@ export class SchemaParserFabric {
   parseSchema = (
     schema: string,
     typeName: string | null = null,
-    schemaPath: string[] = [],
+    schemaPath: string[] = []
   ): ParsedSchema<
     SchemaTypeObjectContent | SchemaTypeEnumContent | SchemaTypePrimitiveContent
   > => {
@@ -100,7 +117,7 @@ export class SchemaParserFabric {
   getInlineParseContent = (
     schema: string,
     typeName: string | null,
-    schemaPath: string[],
+    schemaPath: string[]
   ): Record<string, any> => {
     const parser = this.createSchemaParser({ schema, typeName, schemaPath });
     return parser.getInlineParseContent();
@@ -109,7 +126,7 @@ export class SchemaParserFabric {
   getParseContent = (
     schema: string,
     typeName: string | null,
-    schemaPath: string[],
+    schemaPath: string[]
   ): Record<string, any> => {
     const parser = this.createSchemaParser({ schema, typeName, schemaPath });
     return parser.getParseContent();

@@ -1,4 +1,4 @@
-import lodash from "lodash";
+import * as lodash from "lodash";
 
 type Updater = (target: unknown) => unknown;
 
@@ -10,6 +10,6 @@ export const objectAssign = (target: object, updater: Updater | unknown) => {
     .filter((key) => typeof key === "string");
   Object.assign(target, lodash.merge(target, update));
   for (const key of undefinedKeys) {
-    target[key] = undefined;
+    delete target[key];
   }
 };

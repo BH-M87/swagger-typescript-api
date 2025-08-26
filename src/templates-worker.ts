@@ -1,8 +1,8 @@
 import * as path from "node:path";
-import * as url from "node:url";
+// import * as url from "node:url";
 import { consola } from "consola";
 import * as Eta from "eta";
-import lodash from "lodash";
+import * as lodash from "lodash";
 import type { CodeGenProcess } from "./code-gen-process.js";
 import type { CodeGenConfig } from "./configuration.js";
 import type { FileSystem } from "./util/file-system.js";
@@ -15,7 +15,7 @@ export class TemplatesWorker {
   constructor(
     config: CodeGenConfig,
     fileSystem: FileSystem,
-    getRenderTemplateData: CodeGenProcess["getRenderTemplateData"],
+    getRenderTemplateData: CodeGenProcess["getRenderTemplateData"]
   ) {
     this.config = config;
     this.fileSystem = fileSystem;
@@ -25,17 +25,18 @@ export class TemplatesWorker {
   }
 
   getTemplatePaths = (
-    config: CodeGenConfig,
+    config: CodeGenConfig
   ): CodeGenConfig["templatePaths"] => {
-    const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+    // Use a relative path approach that works with the current module system
+    const __dirname = process.cwd();
     const baseTemplatesPath = path.resolve(__dirname, "../templates/base");
     const defaultTemplatesPath = path.resolve(
       __dirname,
-      "../templates/default",
+      "../templates/default"
     );
     const modularTemplatesPath = path.resolve(
       __dirname,
-      "../templates/modular",
+      "../templates/modular"
     );
     const originalTemplatesPath = config.modular
       ? modularTemplatesPath
@@ -60,17 +61,17 @@ export class TemplatesWorker {
   cropExtension = (path: string) =>
     this.config.templateExtensions.reduce(
       (path, ext) => (path.endsWith(ext) ? path.replace(ext, "") : path),
-      path,
+      path
     );
 
   getTemplateFullPath = (path_: string, fileName: string) => {
     const raw = path.resolve(path_, "./", this.cropExtension(fileName));
     const pathVariants = this.config.templateExtensions.map(
-      (extension) => `${raw}${extension}`,
+      (extension) => `${raw}${extension}`
     );
 
     return pathVariants.find(
-      (variant) => !!this.fileSystem.pathIsExist(variant),
+      (variant) => !!this.fileSystem.pathIsExist(variant)
     );
   };
 
@@ -83,7 +84,7 @@ export class TemplatesWorker {
         path.resolve(
           this.config.templatePaths.custom ||
             this.config.templatePaths.original,
-          packageOrPath,
+          packageOrPath
         )
       );
     }
@@ -108,7 +109,7 @@ export class TemplatesWorker {
 
     if (fileContent) {
       consola.info(
-        `"${name.toLowerCase()}" template found in "${templatePaths.custom}"`,
+        `"${name.toLowerCase()}" template found in "${templatePaths.custom}"`
       );
       return fileContent;
     }
@@ -123,18 +124,18 @@ export class TemplatesWorker {
           "Code generator will use the default template:",
           `"${name.toLowerCase()}"`,
           "template not found in",
-          `"${templatePaths.custom}"`,
+          `"${templatePaths.custom}"`
         );
       } else {
         consola.info(
-          `Code generator will use the default template for "${name.toLowerCase()}"`,
+          `Code generator will use the default template for "${name.toLowerCase()}"`
         );
       }
     }
 
     const originalFullPath = this.getTemplateFullPath(
       templatePaths.original,
-      fileName,
+      fileName
     );
 
     if (originalFullPath) {
@@ -147,7 +148,7 @@ export class TemplatesWorker {
   getTemplates = ({ templatePaths }: CodeGenConfig) => {
     if (templatePaths.custom) {
       consola.info(
-        `try to read templates from directory "${templatePaths.custom}"`,
+        `try to read templates from directory "${templatePaths.custom}"`
       );
     }
 
@@ -157,14 +158,14 @@ export class TemplatesWorker {
         ...acc,
         [name]: this.getTemplate(name, fileName),
       }),
-      {},
+      {}
     );
   };
 
   findTemplateWithExt = (path: string) => {
     const raw = this.cropExtension(path);
     const pathVariants = this.config.templateExtensions.map(
-      (extension) => `${raw}${extension}`,
+      (extension) => `${raw}${extension}`
     );
     return pathVariants.find((variant) => this.fileSystem.pathIsExist(variant));
   };
@@ -178,8 +179,8 @@ export class TemplatesWorker {
       const rawPath = path.resolve(
         path_.replace(
           `@${foundTemplatePathKey}`,
-          lodash.get(this.config.templatePaths, foundTemplatePathKey),
-        ),
+          lodash.get(this.config.templatePaths, foundTemplatePathKey)
+        )
       );
       const fixedPath = this.findTemplateWithExt(rawPath);
 
@@ -191,7 +192,7 @@ export class TemplatesWorker {
     const customPath =
       this.config.templatePaths.custom &&
       this.findTemplateWithExt(
-        path.resolve(this.config.templatePaths.custom, path_),
+        path.resolve(this.config.templatePaths.custom, path_)
       );
 
     if (customPath) {
@@ -199,7 +200,7 @@ export class TemplatesWorker {
     }
 
     const originalPath = this.findTemplateWithExt(
-      path.resolve(this.config.templatePaths.original, path_),
+      path.resolve(this.config.templatePaths.original, path_)
     );
 
     if (originalPath) {
@@ -212,7 +213,7 @@ export class TemplatesWorker {
   renderTemplate = (
     template: string,
     configuration: object,
-    options: object = {},
+    options: object = {}
   ) => {
     if (!template) return "";
 
@@ -228,15 +229,15 @@ export class TemplatesWorker {
         includeFile: (
           path: string,
           configuration: object,
-          options: object = {},
+          options: object = {}
         ) => {
           return this.renderTemplate(
             this.getTemplateContent(path),
             configuration,
-            options,
+            options
           );
         },
-      },
+      }
     );
   };
 }

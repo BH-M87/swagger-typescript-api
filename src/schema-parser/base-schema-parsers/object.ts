@@ -1,4 +1,4 @@
-import lodash from "lodash";
+import * as lodash from "lodash";
 import { SCHEMA_TYPES } from "../../constants.js";
 import { MonoSchemaParser } from "../mono-schema-parser.js";
 
@@ -16,33 +16,37 @@ export class ObjectSchemaParser extends MonoSchemaParser {
       name: this.typeName,
       description: this.schemaFormatters.formatDescription(
         this.schema.description,
+        false
       ),
       allFieldsAreOptional: !contentProperties.some((part) => part.isRequired),
       content: contentProperties,
     };
   }
 
-  getObjectSchemaContent = (schema) => {
+  getObjectSchemaContent = (schema: any) => {
     const { properties, additionalProperties } = schema || {};
 
     const propertiesContent = lodash.map(properties, (property, name) => {
       const required = this.schemaUtils.isPropertyRequired(
         name,
         property,
-        schema,
+        schema
       );
       const rawTypeData = lodash.get(
         this.schemaUtils.getSchemaRefType(property),
         "rawTypeData",
-        {},
+        {}
       );
-      const nullable = !!(rawTypeData.nullable || property.nullable);
+      const nullable = !!(
+        (rawTypeData as any).nullable || (property as any).nullable
+      );
       const fieldName = this.typeNameFormatter.isValidName(name)
         ? name
         : this.config.Ts.StringValue(name);
       const fieldValue = this.schemaParserFabric
         .createSchemaParser({
           schema: property,
+          typeName: null,
           schemaPath: [...this.schemaPath, name],
         })
         .getInlineParseContent();
@@ -57,15 +61,17 @@ export class ObjectSchemaParser extends MonoSchemaParser {
           lodash.compact(
             lodash.map(
               property[this.schemaUtils.getComplexType(property)],
-              "description",
-            ),
+              "description"
+            )
           )[0] ||
-          rawTypeData.description ||
+          (rawTypeData as any).description ||
           lodash.compact(
             lodash.map(
-              rawTypeData[this.schemaUtils.getComplexType(rawTypeData)],
-              "description",
-            ),
+              (rawTypeData as any)[
+                this.schemaUtils.getComplexType(rawTypeData)
+              ],
+              "description"
+            )
           )[0] ||
           "",
         isRequired: required,
@@ -90,6 +96,7 @@ export class ObjectSchemaParser extends MonoSchemaParser {
         interfaceKeysContent = this.schemaParserFabric
           .createSchemaParser({
             schema: propertyNamesSchema,
+            typeName: null,
             schemaPath: this.schemaPath,
           })
           .getInlineParseContent();
@@ -103,7 +110,7 @@ export class ObjectSchemaParser extends MonoSchemaParser {
         isRequired: false,
         field: this.config.Ts.InterfaceDynamicField(
           interfaceKeysContent,
-          this.config.Ts.Keyword.Any,
+          this.config.Ts.Keyword.Any
         ),
       });
     }

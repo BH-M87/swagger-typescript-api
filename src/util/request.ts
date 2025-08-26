@@ -1,5 +1,5 @@
 import { consola } from "consola";
-import lodash from "lodash";
+import * as lodash from "lodash";
 import type { CodeGenConfig } from "../configuration.js";
 
 export class Request {

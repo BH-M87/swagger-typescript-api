@@ -1,4 +1,4 @@
-import lodash from "lodash";
+import * as lodash from "lodash";
 import type { OpenAPI } from "openapi-types";
 import * as typescript from "typescript";
 import type {
@@ -59,9 +59,9 @@ export class CodeGenConfig {
   /** parsed swagger schema from getSwaggerObject() */
 
   /** parsed swagger schema ref */
-  swaggerSchema = null;
+  swaggerSchema: object = {};
   /** original (converted to json) swagger schema ref */
-  originalSchema = null;
+  originalSchema: object = {};
 
   /** { "#/components/schemas/Foo": @TypeInfo, ... } */
   componentsMap = {};
@@ -87,28 +87,34 @@ export class CodeGenConfig {
   };
   routeNameDuplicatesMap = new Map();
   hooks: Hooks = {
-    onPreBuildRoutePath: (_routePath: unknown) => void 0,
-    onBuildRoutePath: (_routeData: unknown) => void 0,
-    onInsertPathParam: (_pathParam: unknown) => void 0,
+    onPreBuildRoutePath: (_routePath: string) => undefined,
+    onBuildRoutePath: (_routeData: any) => undefined,
+    onInsertPathParam: (
+      _paramName: string,
+      _index: number,
+      _arr: any[],
+      _resultRoute: string
+    ) => undefined,
     onCreateComponent: (schema: SchemaComponent) => schema,
     onPreParseSchema: (
       _originalSchema: unknown,
-      _typeName: unknown,
-      _schemaType: unknown,
-    ) => void 0,
+      _typeName: string,
+      _schemaType: string
+    ) => undefined,
     onParseSchema: (_originalSchema: unknown, parsedSchema: unknown) =>
       parsedSchema,
-    onCreateRoute: (routeData: unknown) => routeData,
-    onInit: (config: unknown, _codeGenProcess: unknown) => config,
-    onPrepareConfig: (apiConfig: unknown) => apiConfig,
-    onCreateRequestParams: (_rawType: unknown) => {},
-    onCreateRouteName: () => {},
+    onCreateRoute: (routeData: any) => routeData,
+    onInit: (config: any, _codeGenProcess: any) => config,
+    onPrepareConfig: (apiConfig: any) => apiConfig,
+    onCreateRequestParams: (_rawType: any) => undefined,
+    onCreateRouteName: (_routeNameInfo: any, _rawRouteInfo: any) => undefined,
     onFormatTypeName: (
-      _typeName: unknown,
-      _rawTypeName: unknown,
-      _schemaType: unknown,
-    ) => {},
-    onFormatRouteName: (_routeInfo: unknown, _templateRouteName: unknown) => {},
+      _typeName: string,
+      _rawTypeName?: string,
+      _schemaType?: "type-name" | "enum-key"
+    ) => undefined,
+    onFormatRouteName: (_routeInfo: any, _templateRouteName: string) =>
+      undefined,
   };
   defaultResponseType;
   singleHttpClient = false;
@@ -167,7 +173,7 @@ export class CodeGenConfig {
   spec: OpenAPI.Document | null = null;
   fileName = "Api.ts";
   authorizationToken: string | undefined;
-  requestOptions = null;
+  requestOptions: RequestInit | undefined = undefined;
 
   jsPrimitiveTypes: string[] = [];
   jsEmptyTypes: string[] = [];
@@ -180,7 +186,7 @@ export class CodeGenConfig {
 
   successResponseStatusRange = [200, 299];
 
-  extractingOptions: Partial<ExtractingOptions> = {
+  extractingOptions: ExtractingOptions = {
     requestBodySuffix: ["Payload", "Body", "Input"],
     requestParamsSuffix: ["Params"],
     responseBodySuffix: ["Data", "Result", "Output"],
@@ -201,6 +207,13 @@ export class CodeGenConfig {
       "Internal",
       "Polymorph",
     ],
+    requestBodyNameResolver: () => undefined,
+    responseBodyNameResolver: () => undefined,
+    responseErrorNameResolver: () => undefined,
+    requestParamsNameResolver: () => undefined,
+    enumNameResolver: () => undefined,
+    discriminatorMappingNameResolver: () => undefined,
+    discriminatorAbstractResolver: () => undefined,
   };
 
   compilerTsConfig = {
@@ -326,7 +339,7 @@ export class CodeGenConfig {
      */
     MultilineComment: (
       contents: unknown[],
-      formatFn: (arg: unknown) => unknown,
+      formatFn: (arg: unknown) => unknown
     ) =>
       [
         ...(contents.length === 1
@@ -414,21 +427,26 @@ export class CodeGenConfig {
     templateInfos,
     hooks,
     ...otherConfig
-  }: Partial<GenerateApiConfiguration["config"]>) {
-    objectAssign(this.Ts, codeGenConstructs);
-    objectAssign(this.primitiveTypes, primitiveTypeConstructs);
+  }: Partial<GenerateApiConfiguration["config"]> & {
+    codeGenConstructs?: any;
+    primitiveTypeConstructs?: any;
+    constants?: any;
+    templateInfos?: any;
+  } = {}) {
+    objectAssign(this.Ts, codeGenConstructs || {});
+    objectAssign(this.primitiveTypes, primitiveTypeConstructs || {});
 
     this.defaultResponseType = this.Ts.Keyword.Void;
 
     this.update({
       ...otherConfig,
       hooks: lodash.merge(this.hooks, hooks || {}),
-      constants: {
-        ...CONSTANTS,
-        ...constants,
-      },
-      templateInfos: templateInfos || this.templateInfos,
     });
+
+    // Handle templateInfos separately
+    if (templateInfos) {
+      this.templateInfos = templateInfos;
+    }
 
     this.jsPrimitiveTypes = [
       this.Ts.Keyword.Number,

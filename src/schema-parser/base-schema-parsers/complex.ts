@@ -1,4 +1,4 @@
-import lodash from "lodash";
+import * as lodash from "lodash";
 import { SCHEMA_TYPES } from "../../constants.js";
 import { MonoSchemaParser } from "../mono-schema-parser.js";
 
@@ -7,11 +7,11 @@ export class ComplexSchemaParser extends MonoSchemaParser {
     const complexType = this.schemaUtils.getComplexType(this.schema);
     const simpleSchema = lodash.omit(
       lodash.clone(this.schema),
-      lodash.keys(this.schemaParser._complexSchemaParsers),
+      lodash.keys(this.schemaParser._complexSchemaParsers)
     );
-    const complexSchemaContent = this.schemaParser._complexSchemaParsers[
-      complexType
-    ](this.schema);
+    const complexSchemaContent = (
+      this.schemaParser._complexSchemaParsers as any
+    )[complexType](this.schema);
 
     return {
       ...(typeof this.schema === "object" ? this.schema : {}),
@@ -24,9 +24,10 @@ export class ComplexSchemaParser extends MonoSchemaParser {
       description: this.schemaFormatters.formatDescription(
         this.schema.description ||
           lodash.compact(
-            lodash.map(this.schema[complexType], "description"),
+            lodash.map(this.schema[complexType], "description")
           )[0] ||
           "",
+        false
       ),
       content:
         this.config.Ts.IntersectionType(
@@ -38,11 +39,12 @@ export class ComplexSchemaParser extends MonoSchemaParser {
                 this.schemaParserFabric
                   .createSchemaParser({
                     schema: simpleSchema,
+                    typeName: null,
                     schemaPath: this.schemaPath,
                   })
-                  .getInlineParseContent(),
+                  .getInlineParseContent()
               ),
-          ]),
+          ])
         ) || this.config.Ts.Keyword.Any,
     };
   }

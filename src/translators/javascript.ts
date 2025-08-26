@@ -7,7 +7,7 @@ export class JavascriptTranslator extends Translator {
     const output = {};
     const host = typescript.createCompilerHost(
       this.config.compilerTsConfig,
-      true,
+      true
     );
     const fileNames = [fileNameFull];
     const originalSourceFileGet = host.getSourceFile.bind(host);
@@ -15,14 +15,14 @@ export class JavascriptTranslator extends Translator {
       sourceFileName,
       languageVersion,
       onError,
-      shouldCreateNewSourceFile,
+      shouldCreateNewSourceFile
     ) => {
       if (sourceFileName !== fileNameFull)
         return originalSourceFileGet(
           sourceFileName,
           languageVersion,
           onError,
-          shouldCreateNewSourceFile,
+          shouldCreateNewSourceFile
         );
 
       return typescript.createSourceFile(
@@ -30,12 +30,12 @@ export class JavascriptTranslator extends Translator {
         input.fileContent,
         languageVersion,
         true,
-        typescript.ScriptKind.TS,
+        typescript.ScriptKind.TS
       );
     };
 
     host.writeFile = (fileName, contents) => {
-      output[fileName] = contents;
+      (output as any)[fileName] = contents;
     };
 
     typescript
@@ -45,7 +45,7 @@ export class JavascriptTranslator extends Translator {
     return output;
   };
 
-  translate = async (input) => {
+  override translate = async (input: any) => {
     const compiled = this.compileTSCode(input);
 
     const jsFileName = `${input.fileName}${typescript.Extension.Js}`;
@@ -53,10 +53,10 @@ export class JavascriptTranslator extends Translator {
     const sourceContent = compiled[jsFileName];
     const tsImportRows = input.fileContent
       .split("\n")
-      .filter((line) => line.startsWith("import "));
-    const declarationContent = compiled[dtsFileName]
+      .filter((line: any) => line.startsWith("import "));
+    const declarationContent = (compiled[dtsFileName] || "")
       .split("\n")
-      .map((line) => {
+      .map((line: any) => {
         if (line.startsWith("import ")) {
           return tsImportRows.shift();
         }
@@ -68,7 +68,7 @@ export class JavascriptTranslator extends Translator {
       {
         fileName: input.fileName,
         fileExtension: typescript.Extension.Js,
-        fileContent: await this.codeFormatter.formatCode(sourceContent),
+        fileContent: await this.codeFormatter.formatCode(sourceContent || ""),
       },
       {
         fileName: input.fileName,

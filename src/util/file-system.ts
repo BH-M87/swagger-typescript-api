@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as url from "node:url";
+// import * as url from "node:url";
 import { consola } from "consola";
 import { FILE_PREFIX } from "../constants.js";
 
@@ -63,8 +63,19 @@ export class FileSystem {
     return !!path && fs.existsSync(path);
   };
 
-  createFile = ({ path: path_, fileName, content, withPrefix }) => {
-    const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+  createFile = ({
+    path: path_,
+    fileName,
+    content,
+    withPrefix,
+  }: {
+    path: any;
+    fileName: any;
+    content: any;
+    withPrefix: any;
+  }) => {
+    // Use a relative path approach that works with the current module system
+    const __dirname = process.cwd();
     const absolutePath = path.resolve(__dirname, path_, `./${fileName}`);
     const fileContent = `${withPrefix ? FILE_PREFIX : ""}${content}`;
 

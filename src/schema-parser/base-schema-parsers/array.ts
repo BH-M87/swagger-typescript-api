@@ -11,14 +11,22 @@ export class ArraySchemaParser extends MonoSchemaParser {
       for (const item of items) {
         tupleContent.push(
           this.schemaParserFabric
-            .createSchemaParser({ schema: item, schemaPath: this.schemaPath })
-            .getInlineParseContent(),
+            .createSchemaParser({
+              schema: item,
+              typeName: null,
+              schemaPath: this.schemaPath,
+            })
+            .getInlineParseContent()
         );
       }
       contentType = this.config.Ts.Tuple(tupleContent);
     } else {
       const content = this.schemaParserFabric
-        .createSchemaParser({ schema: items, schemaPath: this.schemaPath })
+        .createSchemaParser({
+          schema: items,
+          typeName: null,
+          schemaPath: this.schemaPath,
+        })
         .getInlineParseContent();
       contentType = this.config.Ts.ArrayType(content);
     }
@@ -31,8 +39,8 @@ export class ArraySchemaParser extends MonoSchemaParser {
       type: SCHEMA_TYPES.PRIMITIVE,
       typeIdentifier: this.config.Ts.Keyword.Type,
       name: this.typeName,
-      description: this.schemaFormatters.formatDescription(description),
-      content: this.schemaUtils.safeAddNullToType(this.schema, contentType),
+      description: this.schemaFormatters.formatDescription(description, false),
+      content: this.schemaUtils.safeAddNullToType(contentType, contentType),
     };
   }
 }

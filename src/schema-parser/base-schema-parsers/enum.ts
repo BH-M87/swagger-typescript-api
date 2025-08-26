@@ -1,4 +1,4 @@
-import lodash from "lodash";
+import * as lodash from "lodash";
 import { SCHEMA_TYPES } from "../../constants.js";
 import { MonoSchemaParser } from "../mono-schema-parser.js";
 import { EnumKeyResolver } from "../util/enum-key-resolver.js";
@@ -6,28 +6,33 @@ import { EnumKeyResolver } from "../util/enum-key-resolver.js";
 export class EnumSchemaParser extends MonoSchemaParser {
   enumKeyResolver: EnumKeyResolver;
 
-  constructor(...args) {
+  constructor(...args: any[]) {
     // @ts-expect-error TS(2556) FIXME: A spread argument must either have a tuple type or... Remove this comment to see the full error message
     super(...args);
     this.enumKeyResolver = new EnumKeyResolver(this.config, []);
   }
 
-  extractEnum = (pathTypeName) => {
+  extractEnum = (pathTypeName: any) => {
     const generatedTypeName = this.schemaUtils.resolveTypeName(pathTypeName, {
       suffixes: this.config.extractingOptions.enumSuffix,
+      prefixes: [],
       resolver: this.config.extractingOptions.enumNameResolver,
     });
     const customComponent = this.schemaComponentsMap.createComponent(
       this.schemaComponentsMap.createRef([
         "components",
         "schemas",
-        generatedTypeName,
+        generatedTypeName || "UnknownEnum",
       ]),
       {
         ...this.schema,
-      },
+      }
     );
-    return this.schemaParserFabric.parseSchema(customComponent);
+    return this.schemaParserFabric.parseSchema(
+      customComponent.rawTypeData as any,
+      customComponent.typeName,
+      []
+    );
   };
 
   override parse() {
@@ -42,22 +47,22 @@ export class EnumSchemaParser extends MonoSchemaParser {
 
     // fix schema when enum has length 1+ but value is []
     if (Array.isArray(this.schema.enum)) {
-      this.schema.enum = this.schema.enum.filter((key) => key != null);
+      this.schema.enum = this.schema.enum.filter((key: any) => key != null);
     }
 
     if (Array.isArray(this.schema.enum) && Array.isArray(this.schema.enum[0])) {
       return this.schemaParserFabric.parseSchema(
         {
-          oneOf: this.schema.enum.map((enumNames) => ({
+          oneOf: this.schema.enum.map((enumNames: any) => ({
             type: "array",
-            items: enumNames.map((enumName) => ({
+            items: enumNames.map((enumName: any) => ({
               type: "string",
               enum: [enumName],
             })),
           })),
-        },
+        } as any,
         this.typeName,
-        this.schemaPath,
+        this.schemaPath
       );
     }
 
@@ -67,9 +72,9 @@ export class EnumSchemaParser extends MonoSchemaParser {
 
     let content = null;
 
-    const formatValue = (value) => {
+    const formatValue = (value: any) => {
       if (value === null) {
-        return this.config.Ts.NullValue(value);
+        return this.config.Ts.NullValue();
       }
       if (
         keyType.includes(this.schemaUtils.getSchemaType({ type: "number" }))
@@ -110,7 +115,7 @@ export class EnumSchemaParser extends MonoSchemaParser {
         };
       });
     } else {
-      content = this.schema.enum.map((value, index) => {
+      content = this.schema.enum.map((value: any, index: any) => {
         return {
           // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
           key: this.formatEnumKey({ value }),
@@ -124,7 +129,7 @@ export class EnumSchemaParser extends MonoSchemaParser {
     return {
       ...(typeof this.schema === "object" ? this.schema : {}),
       $ref: $ref,
-      typeName: this.typeName || ($ref && refType.typeName) || null,
+      typeName: this.typeName || ($ref && refType?.typeName) || "UnknownEnum",
       $parsedSchema: true,
       schemaType: SCHEMA_TYPES.ENUM,
       type: SCHEMA_TYPES.ENUM,
@@ -135,12 +140,13 @@ export class EnumSchemaParser extends MonoSchemaParser {
       name: this.typeName,
       description: this.schemaFormatters.formatDescription(
         this.schema.description,
+        false
       ),
       content,
     };
   }
 
-  formatEnumKey = ({ key, value }) => {
+  formatEnumKey = ({ key, value }: { key: any; value: any }) => {
     let formatted;
 
     if (key) {
@@ -155,6 +161,6 @@ export class EnumSchemaParser extends MonoSchemaParser {
       });
     }
 
-    return this.enumKeyResolver.resolve([formatted]);
+    return this.enumKeyResolver.resolve([formatted || "UnknownKey"]);
   };
 }

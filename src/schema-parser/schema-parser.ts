@@ -1,5 +1,5 @@
 import { consola } from "consola";
-import lodash from "lodash";
+import * as lodash from "lodash";
 import type { CodeGenConfig } from "../configuration.js";
 import { SCHEMA_TYPES } from "../constants.js";
 import type { SchemaComponentsMap } from "../schema-components-map.js";
@@ -33,7 +33,7 @@ export class SchemaParser {
 
   typeName;
   schema;
-  schemaPath = [];
+  schemaPath: any[] = [];
 
   // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
   constructor(schemaParserFabric, { typeName, schema, schemaPath } = {}) {
@@ -48,118 +48,118 @@ export class SchemaParser {
 
     this.typeName = typeName || null;
     this.schema = schema;
-    this.schemaPath = [...(schemaPath || [])];
+    this.schemaPath = [...(schemaPath || [])] as any[];
   }
 
   _complexSchemaParsers = {
-    [SCHEMA_TYPES.COMPLEX_ONE_OF]: (schema) => {
+    [SCHEMA_TYPES.COMPLEX_ONE_OF]: (schema: any) => {
       const SchemaParser =
         this.config.schemaParsers.complexOneOf || OneOfSchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         null,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
-    [SCHEMA_TYPES.COMPLEX_ALL_OF]: (schema) => {
+    [SCHEMA_TYPES.COMPLEX_ALL_OF]: (schema: any) => {
       const SchemaParser =
         this.config.schemaParsers.complexAllOf || AllOfSchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         null,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
-    [SCHEMA_TYPES.COMPLEX_ANY_OF]: (schema) => {
+    [SCHEMA_TYPES.COMPLEX_ANY_OF]: (schema: any) => {
       const SchemaParser =
         this.config.schemaParsers.complexAnyOf || AnyOfSchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         null,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
-    [SCHEMA_TYPES.COMPLEX_NOT]: (schema) => {
+    [SCHEMA_TYPES.COMPLEX_NOT]: (schema: any) => {
       const SchemaParser =
         this.config.schemaParsers.complexNot || NotSchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         null,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
   };
 
   _baseSchemaParsers = {
-    [SCHEMA_TYPES.ENUM]: (schema, typeName) => {
+    [SCHEMA_TYPES.ENUM]: (schema: any, typeName: any) => {
       const SchemaParser = this.config.schemaParsers.enum || EnumSchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         typeName,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
-    [SCHEMA_TYPES.OBJECT]: (schema, typeName) => {
+    [SCHEMA_TYPES.OBJECT]: (schema: any, typeName: any) => {
       const SchemaParser =
         this.config.schemaParsers.object || ObjectSchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         typeName,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
-    [SCHEMA_TYPES.COMPLEX]: (schema, typeName) => {
+    [SCHEMA_TYPES.COMPLEX]: (schema: any, typeName: any) => {
       const SchemaParser =
         this.config.schemaParsers.complex || ComplexSchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         typeName,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
-    [SCHEMA_TYPES.PRIMITIVE]: (schema, typeName) => {
+    [SCHEMA_TYPES.PRIMITIVE]: (schema: any, typeName: any) => {
       const SchemaParser =
         this.config.schemaParsers.primitive || PrimitiveSchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         typeName,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
-    [SCHEMA_TYPES.DISCRIMINATOR]: (schema, typeName) => {
+    [SCHEMA_TYPES.DISCRIMINATOR]: (schema: any, typeName: any) => {
       const SchemaParser =
         this.config.schemaParsers.discriminator || DiscriminatorSchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         typeName,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
-    [SCHEMA_TYPES.ARRAY]: (schema, typeName) => {
+    [SCHEMA_TYPES.ARRAY]: (schema: any, typeName: any) => {
       const SchemaParser = this.config.schemaParsers.array || ArraySchemaParser;
-      const schemaParser = new SchemaParser(
+      const schemaParser = new (SchemaParser as any)(
         this,
         schema,
         typeName,
-        this.schemaPath,
+        this.schemaPath
       );
       return schemaParser.parse();
     },
@@ -169,7 +169,7 @@ export class SchemaParser {
     if (!this.schema)
       return this._baseSchemaParsers[SCHEMA_TYPES.PRIMITIVE](
         null,
-        this.typeName,
+        this.typeName
       );
 
     let schemaType = null;
@@ -219,19 +219,19 @@ export class SchemaParser {
 
       schemaType = this.schemaUtils.getInternalSchemaType(this.schema);
 
-      this.schemaPath.push(this.typeName);
+      (this.schemaPath as any[]).push(this.typeName);
 
       lodash.merge(
         this.schema,
         this.config.hooks.onPreParseSchema(
           this.schema,
           this.typeName,
-          schemaType,
-        ),
+          schemaType
+        )
       );
       parsedSchema = this._baseSchemaParsers[schemaType](
         this.schema,
-        this.typeName,
+        this.typeName
       );
       this.schema.$parsed =
         this.config.hooks.onParseSchema(this.schema, parsedSchema) ||
@@ -242,7 +242,7 @@ export class SchemaParser {
         Array.isArray(this.schema.$parsed?.content)
       ) {
         this.schema.$parsed.content = this.schema.$parsed.content.sort(
-          sortByProperty("name"),
+          sortByProperty("name")
         );
       }
     }
@@ -256,7 +256,7 @@ export class SchemaParser {
     const parsedSchema = this.parseSchema();
     const formattedSchema = this.schemaFormatters.formatSchema(
       parsedSchema,
-      "inline",
+      "inline"
     );
     return formattedSchema.content;
   };
@@ -265,12 +265,12 @@ export class SchemaParser {
     const parsedSchema = this.parseSchema();
     const formattedSchema = this.schemaFormatters.formatSchema(
       parsedSchema,
-      "base",
+      "base"
     );
     return formattedSchema.content;
   };
 
-  extractSchemaFromResponseStruct = (responseStruct) => {
+  extractSchemaFromResponseStruct = (responseStruct: any) => {
     const { content, ...extras } = responseStruct;
 
     const firstResponse = lodash.first(lodash.values(content));

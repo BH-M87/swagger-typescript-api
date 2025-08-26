@@ -9,7 +9,7 @@ export class PrimitiveSchemaParser extends MonoSchemaParser {
 
     if (type === this.config.Ts.Keyword.Object && additionalProperties) {
       const propertyNamesSchema = this.schemaUtils.getSchemaPropertyNamesSchema(
-        this.schema,
+        this.schema
       );
 
       let recordKeysContent: any;
@@ -19,6 +19,7 @@ export class PrimitiveSchemaParser extends MonoSchemaParser {
         recordKeysContent = this.schemaParserFabric
           .createSchemaParser({
             schema: propertyNamesSchema,
+            typeName: null,
             schemaPath: this.schemaPath,
           })
           .getInlineParseContent();
@@ -30,6 +31,7 @@ export class PrimitiveSchemaParser extends MonoSchemaParser {
         recordValuesContent = this.schemaParserFabric
           .createSchemaParser({
             schema: additionalProperties,
+            typeName: null,
             schemaPath: this.schemaPath,
           })
           .getInlineParseContent();
@@ -39,7 +41,7 @@ export class PrimitiveSchemaParser extends MonoSchemaParser {
 
       contentType = this.config.Ts.RecordType(
         recordKeysContent,
-        recordValuesContent,
+        recordValuesContent
       );
     }
 
@@ -54,9 +56,13 @@ export class PrimitiveSchemaParser extends MonoSchemaParser {
       contentType = this.config.Ts.Tuple(
         items.map((item) =>
           this.schemaParserFabric
-            .createSchemaParser({ schema: item, schemaPath: this.schemaPath })
-            .getInlineParseContent(),
-        ),
+            .createSchemaParser({
+              schema: item,
+              typeName: null,
+              schemaPath: this.schemaPath,
+            })
+            .getInlineParseContent()
+        )
       );
     }
 
@@ -68,7 +74,7 @@ export class PrimitiveSchemaParser extends MonoSchemaParser {
       type: SCHEMA_TYPES.PRIMITIVE,
       typeIdentifier: this.config.Ts.Keyword.Type,
       name: this.typeName,
-      description: this.schemaFormatters.formatDescription(description),
+      description: this.schemaFormatters.formatDescription(description, false),
       // TODO: probably it should be refactored. `type === 'null'` is not flexible
       content:
         type === this.config.Ts.Keyword.Null

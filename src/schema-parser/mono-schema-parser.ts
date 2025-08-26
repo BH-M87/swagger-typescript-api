@@ -8,7 +8,7 @@ import type { SchemaUtils } from "./schema-utils.js";
 
 export class MonoSchemaParser {
   schema;
-  typeName;
+  typeName: any;
   schemaPath;
 
   schemaParser: SchemaParser;
@@ -21,9 +21,9 @@ export class MonoSchemaParser {
 
   constructor(
     schemaParser: SchemaParser,
-    schema,
+    schema: any,
     typeName = null,
-    schemaPath = [],
+    schemaPath = []
   ) {
     this.schemaParser = schemaParser;
     this.schemaParserFabric = schemaParser.schemaParserFabric;

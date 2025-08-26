@@ -1,4 +1,4 @@
-import lodash from "lodash";
+import * as lodash from "lodash";
 import type { CodeGenConfig } from "../configuration.js";
 import { SCHEMA_TYPES } from "../constants.js";
 import type { TemplatesWorker } from "../templates-worker.js";
@@ -18,13 +18,13 @@ export class SchemaFormatters {
   }
 
   base = {
-    [SCHEMA_TYPES.ENUM]: (parsedSchema) => {
+    [SCHEMA_TYPES.ENUM]: (parsedSchema: any) => {
       if (this.config.generateUnionEnums) {
         return {
           ...parsedSchema,
           $content: parsedSchema.content,
           content: this.config.Ts.UnionType(
-            parsedSchema.content.map(({ value }) => value),
+            parsedSchema.content.map(({ value }: { value: any }) => value)
           ),
         };
       }
@@ -35,7 +35,7 @@ export class SchemaFormatters {
         content: this.config.Ts.EnumFieldsWrapper(parsedSchema.content),
       };
     },
-    [SCHEMA_TYPES.OBJECT]: (parsedSchema) => {
+    [SCHEMA_TYPES.OBJECT]: (parsedSchema: any) => {
       if (parsedSchema.nullable)
         return this.inline[SCHEMA_TYPES.OBJECT](parsedSchema);
       return {
@@ -44,7 +44,7 @@ export class SchemaFormatters {
         content: this.formatObjectContent(parsedSchema.content),
       };
     },
-    [SCHEMA_TYPES.PRIMITIVE]: (parsedSchema) => {
+    [SCHEMA_TYPES.PRIMITIVE]: (parsedSchema: any) => {
       return {
         ...parsedSchema,
         $content: parsedSchema.content,
@@ -52,25 +52,30 @@ export class SchemaFormatters {
     },
   };
   inline = {
-    [SCHEMA_TYPES.ENUM]: (parsedSchema) => {
+    [SCHEMA_TYPES.ENUM]: (parsedSchema: any) => {
       return {
         ...parsedSchema,
         content: parsedSchema.$ref
           ? parsedSchema.typeName
           : this.config.Ts.UnionType(
               lodash.compact([
-                ...parsedSchema.content.map(({ value }) => `${value}`),
+                ...parsedSchema.content.map(
+                  ({ value }: { value: any }) => `${value}`
+                ),
                 parsedSchema.nullable && this.config.Ts.Keyword.Null,
-              ]),
+              ])
             ) || this.config.Ts.Keyword.Any,
       };
     },
-    [SCHEMA_TYPES.OBJECT]: (parsedSchema) => {
+    [SCHEMA_TYPES.OBJECT]: (parsedSchema: any) => {
       if (typeof parsedSchema.content === "string")
         return {
           ...parsedSchema,
           typeIdentifier: this.config.Ts.Keyword.Type,
-          content: this.schemaUtils.safeAddNullToType(parsedSchema.content),
+          content: this.schemaUtils.safeAddNullToType(
+            parsedSchema,
+            parsedSchema.content
+          ),
         };
 
       return {
@@ -80,12 +85,12 @@ export class SchemaFormatters {
           parsedSchema,
           parsedSchema.content.length
             ? this.config.Ts.ObjectWrapper(
-                this.formatObjectContent(parsedSchema.content),
+                this.formatObjectContent(parsedSchema.content)
               )
             : this.config.Ts.RecordType(
                 this.config.Ts.Keyword.String,
-                this.config.Ts.Keyword.Any,
-              ),
+                this.config.Ts.Keyword.Any
+              )
         ),
       };
     },
@@ -93,7 +98,7 @@ export class SchemaFormatters {
 
   formatSchema = (
     parsedSchema: Record<string, any>,
-    formatType: "base" | "inline" = "base",
+    formatType: "base" | "inline" = "base"
   ) => {
     const schemaType =
       lodash.get(parsedSchema, ["schemaType"]) ||
@@ -102,7 +107,7 @@ export class SchemaFormatters {
     return formatterFn?.(parsedSchema) || parsedSchema;
   };
 
-  formatDescription = (description, inline) => {
+  formatDescription = (description: any, inline: any) => {
     if (!description) return "";
 
     const hasMultipleLines = description.includes("\n");
@@ -115,7 +120,7 @@ export class SchemaFormatters {
           // @ts-expect-error TS(2339) FIXME: Property '_' does not exist on type 'LoDashStatic'... Remove this comment to see the full error message
           ._(description)
           .split(/\n/g)
-          .map((part) => part.trim())
+          .map((part: any) => part.trim())
           .compact()
           .join(" ")
           .valueOf()
@@ -125,7 +130,7 @@ export class SchemaFormatters {
     return description.replace(/\n$/g, "");
   };
 
-  formatObjectContent = (content) => {
+  formatObjectContent = (content: any) => {
     const fields = [];
 
     for (const part of content) {
@@ -136,7 +141,7 @@ export class SchemaFormatters {
         this.config.templatesToRender.dataContractJsDoc,
         {
           data: part,
-        },
+        }
       );
 
       const routeNameFromTemplate = renderedJsDoc

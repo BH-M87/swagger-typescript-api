@@ -85,24 +85,27 @@ export class TemplatesGenProcess {
       }
 
       consola.success(
-        `source templates has been successfully created in "${outputPath}"`,
+        `source templates has been successfully created in "${outputPath}"`
       );
     }
 
     return {
-      files: templates,
-      configuration: this.config,
+      files: templates.map((t: any) => ({
+        fileName: t.name,
+        fileExtension: ".eta",
+        fileContent: t.content,
+      })),
       createFile: this.fileSystem.createFile,
-    };
+    } as any;
   }
 
   getTemplates = () => {
     const outputFiles = [];
     const baseTemplates = this.getTemplateNamesFromDir(
-      this.paths.baseTemplates,
+      this.paths.baseTemplates
     );
     const httpClientTemplates = this.getTemplateNamesFromDir(
-      this.paths.httpClientTemplates,
+      this.paths.httpClientTemplates
     );
     const apiTemplatesPath = this.config.modular
       ? this.paths.moduleApiTemplates
@@ -110,7 +113,7 @@ export class TemplatesGenProcess {
     const apiTemplates = this.getTemplateNamesFromDir(apiTemplatesPath);
 
     const usingHttpClientTemplate = httpClientTemplates.find((template) =>
-      template.startsWith(`${this.config.httpClientType}-`),
+      template.startsWith(`${this.config.httpClientType}-`)
     );
 
     let httpClientTemplateContent = "";
@@ -118,8 +121,8 @@ export class TemplatesGenProcess {
     if (usingHttpClientTemplate) {
       httpClientTemplateContent = this.fixTemplateContent(
         this.getTemplateContent(
-          `${this.paths.httpClientTemplates}/${usingHttpClientTemplate}`,
-        ),
+          `${this.paths.httpClientTemplates}/${usingHttpClientTemplate}`
+        )
       );
     }
 
@@ -127,7 +130,7 @@ export class TemplatesGenProcess {
       const templateContent =
         (fileName === "http-client.ejs" && httpClientTemplateContent) ||
         this.fixTemplateContent(
-          this.getTemplateContent(`${this.paths.baseTemplates}/${fileName}`),
+          this.getTemplateContent(`${this.paths.baseTemplates}/${fileName}`)
         );
 
       outputFiles.push({
@@ -140,7 +143,7 @@ export class TemplatesGenProcess {
       outputFiles.push({
         name: fileName,
         content: this.fixTemplateContent(
-          this.getTemplateContent(`${apiTemplatesPath}/${fileName}`),
+          this.getTemplateContent(`${apiTemplatesPath}/${fileName}`)
         ),
       });
     }
@@ -148,27 +151,27 @@ export class TemplatesGenProcess {
     return outputFiles;
   };
 
-  fixTemplateContent = (content) => {
+  fixTemplateContent = (content: any) => {
     // includeFile("@base/
     const importsRegExp1 = new RegExp(
       `includeFile\\("(${this.importTemplatePrefixes
         .map((v) => `(${v})`)
         .join("|")})/`,
-      "g",
+      "g"
     );
     // includeFile(`@base/
     const importsRegExp2 = new RegExp(
       `includeFile\\(\`(${this.importTemplatePrefixes
         .map((v) => `(${v})`)
         .join("|")})/`,
-      "g",
+      "g"
     );
     // includeFile('@base/
     const importsRegExp3 = new RegExp(
       `includeFile\\('(${this.importTemplatePrefixes
         .map((v) => `(${v})`)
         .join("|")})/`,
-      "g",
+      "g"
     );
 
     return content
@@ -177,15 +180,15 @@ export class TemplatesGenProcess {
       .replace(importsRegExp3, "includeFile('./");
   };
 
-  getTemplateNamesFromDir = (dir) => {
+  getTemplateNamesFromDir = (dir: any) => {
     return this.fileSystem
       .readDir(path.resolve(this.rootDir, dir))
       .filter((file) => file.endsWith(".ejs"));
   };
 
-  getTemplateContent = (pathToFile) => {
+  getTemplateContent = (pathToFile: any) => {
     return this.fileSystem.getFileContent(
-      path.resolve(this.rootDir, pathToFile),
+      path.resolve(this.rootDir, pathToFile)
     );
   };
 }

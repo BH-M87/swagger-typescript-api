@@ -1,6 +1,6 @@
 import { consola } from "consola";
 import * as yaml from "js-yaml";
-import lodash from "lodash";
+import * as lodash from "lodash";
 import type { OpenAPI, OpenAPIV2 } from "openapi-types";
 import * as swagger2openapi from "swagger2openapi";
 import type { CodeGenConfig } from "./configuration.js";
@@ -28,7 +28,7 @@ export class SwaggerSchemaResolver {
     const swaggerSchemaFile = await this.fetchSwaggerSchemaFile(
       input,
       url,
-      authorizationToken,
+      authorizationToken
     );
     const swaggerSchemaObject =
       this.processSwaggerSchemaFile(swaggerSchemaFile);
@@ -37,7 +37,7 @@ export class SwaggerSchemaResolver {
 
   convertSwaggerObject(
     swaggerSchema: OpenAPI.Document,
-    converterOptions: { patch?: boolean },
+    converterOptions: { patch?: boolean }
   ): Promise<{
     usageSchema: OpenAPI.Document;
     originalSchema: OpenAPI.Document;
@@ -49,10 +49,10 @@ export class SwaggerSchemaResolver {
           title: "No title",
           version: "",
         },
-        result.info,
+        result.info
       );
 
-      if (!Object.hasOwn(result, "openapi")) {
+      if (!Object.prototype.hasOwnProperty.call(result, "openapi")) {
         result.paths = lodash.merge({}, result.paths);
 
         swagger2openapi.convertObj(
@@ -68,7 +68,7 @@ export class SwaggerSchemaResolver {
             const parsedSwaggerSchema = lodash.get(
               err,
               "options.openapi",
-              lodash.get(options, "openapi"),
+              lodash.get(options, "openapi")
             );
             if (!parsedSwaggerSchema && err) {
               throw err;
@@ -78,7 +78,7 @@ export class SwaggerSchemaResolver {
               usageSchema: parsedSwaggerSchema,
               originalSchema: result,
             });
-          },
+          }
         );
       } else {
         resolve({
@@ -97,7 +97,7 @@ export class SwaggerSchemaResolver {
   async fetchSwaggerSchemaFile(
     pathToSwagger: string,
     urlToSwagger: string,
-    authToken?: string,
+    authToken?: string
   ) {
     if (this.fileSystem.pathIsExist(pathToSwagger)) {
       return this.getSwaggerSchemaByPath(pathToSwagger);
@@ -119,7 +119,13 @@ export class SwaggerSchemaResolver {
     }
   }
 
-  fixSwaggerSchema({ usageSchema, originalSchema }) {
+  fixSwaggerSchema({
+    usageSchema,
+    originalSchema,
+  }: {
+    usageSchema: any;
+    originalSchema: any;
+  }) {
     const usagePaths = lodash.get(usageSchema, "paths");
     const originalPaths = lodash.get(originalSchema, "paths");
 
@@ -134,7 +140,7 @@ export class SwaggerSchemaResolver {
         const originalRouteParams = lodash.get(
           originalRouteInfo,
           "parameters",
-          [],
+          []
         );
 
         if (typeof usageRouteInfo === "object") {
@@ -142,21 +148,21 @@ export class SwaggerSchemaResolver {
             lodash.compact([
               ...(usageRouteInfo.consumes || []),
               ...(originalRouteInfo.consumes || []),
-            ]),
+            ])
           );
           usageRouteInfo.produces = lodash.uniq(
             lodash.compact([
               ...(usageRouteInfo.produces || []),
               ...(originalRouteInfo.produces || []),
-            ]),
+            ])
           );
         }
 
         lodash.each(originalRouteParams, (originalRouteParam) => {
           const existUsageParam = usageRouteParams.find(
-            (param) =>
+            (param: any) =>
               originalRouteParam.in === param.in &&
-              originalRouteParam.name === param.name,
+              originalRouteParam.name === param.name
           );
           if (!existUsageParam) {
             usageRouteParams.push(originalRouteParam);

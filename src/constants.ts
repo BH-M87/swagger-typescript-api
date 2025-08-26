@@ -1,4 +1,10 @@
-import packageJson from "../package.json" with { type: "json" };
+import { readFileSync } from "fs";
+import { join } from "path";
+
+// Use a relative path approach that works with the current module system
+const packageJson = JSON.parse(
+  readFileSync(join(process.cwd(), "package.json"), "utf8")
+);
 
 export const DEFAULT_BODY_ARG_NAME = "data";
 
